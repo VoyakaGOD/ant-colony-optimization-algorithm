@@ -1,0 +1,18 @@
+.point
+{
+    background-color: red;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 25%;
+    transform: translate(-50%, -50%);
+    line-height: 30px;
+    text-align: center;
+}
+
+#scene
+{
+    background-color: #e0dfdf;
+    width: 1000px;
+    height: 500px;
+}
