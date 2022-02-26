@@ -62,10 +62,7 @@ scene.onclick = (e) => {
         DrawPoint(els[i].x, els[i].y);
 };
 
-AddButton("start.png", (event) => {}, null);
-AddText(150, "gtgtg", null);
-AddText(150, "gtgtg", null);
-var block = AddBlock();
-AddText(150, "gtgtg", block).style.textAlign="right";
-AddSlider(350, 0, 20, 10, 1, (event) => {}, block);
-//AddButton("start.png", GUI_ITEM_HEIGHT, (event) => alert(999));
+
+let test = AddSlider("123456789", 0, 20, 10, 1, e => {});
+let btn = AddButton("123456789", e => btn.innerHTML = test.value);
+AddText("123456789");

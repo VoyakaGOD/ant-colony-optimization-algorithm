@@ -1,55 +1,69 @@
-const GUI_ITEM_HEIGHT = 35;
+const GUI_LINE_HEIGHT = 35;
 
-const GUIContainer = document.createElement("div");
+const GUIContainer = document.createElement("table");
 GUIContainer.id = "GUIContainer";
 document.body.appendChild(GUIContainer);
 
-function AddBlock()
+function AddLine()
 {
-    let element = document.createElement("div");
-    element.className = "GUIBlock";
-    GUIContainer.appendChild(element);
-    return element;
+    let line = document.createElement("tr");
+    line.style.height = GUI_LINE_HEIGHT + "px";
+    GUIContainer.appendChild(line);
+    return line;
 }
 
-function AddButton(img, onclick, block)
+function AddSolidLine()
 {
-    let element = document.createElement("img");
-    element.className = "GUIButton";
-    element.src = img;
-    element.style.height = GUI_ITEM_HEIGHT + "px";
-    element.onclick = onclick;
-    if(block) block.appendChild(element);
-    else GUIContainer.appendChild(element);
-    return element;
+    let cell = document.createElement("td");
+    cell.colSpan = 2;
+    AddLine().appendChild(cell);
+    return cell;
 }
 
-function AddText(width, text, block)
+function AddPartedLine()
+{
+    let line = AddLine();
+    let left = document.createElement("td");
+    let right = document.createElement("td");
+    line.appendChild(left);
+    line.appendChild(right);
+    return {left, right};
+}
+
+function AddTextedGUIElement(text, cell, extraClass)
 {
     let element = document.createElement("div");
-    element.className = "GUIText";
+    element.className = "GUIElement " + extraClass;
     element.innerHTML = text;
-    element.style.width = width + "px";
-    element.style.height = GUI_ITEM_HEIGHT + "px";
-    element.style.lineHeight = GUI_ITEM_HEIGHT + "px";
-    if(block) block.appendChild(element);
-    else GUIContainer.appendChild(element);
+    element.style.lineHeight = GUI_LINE_HEIGHT + "px";
+    cell.appendChild(element);
     return element;
 }
 
-function AddSlider(width, min, max, val, step, onchange, block)
+function AddText(text)
 {
+    return AddTextedGUIElement(text, AddSolidLine(), "GUIText");
+}
+
+function AddButton(text, onclick)
+{
+    let element = AddTextedGUIElement(text, AddSolidLine(), "GUIButton");
+    element.onclick = onclick;
+    return element;
+}
+
+function AddSlider(text, min, max, val, step, onchange)
+{
+    let line = AddPartedLine();
+    AddTextedGUIElement(text, line.left, "GUISliderText");
     let element = document.createElement("input");
-    element.className = "GUISlider";
+    element.className = "GUIElement";
     element.type = 'range';
     element.min = min;
     element.max = max;
     element.value = val;
     element.step = step;
-    element.style.width = width + "px";
-    element.style.height = GUI_ITEM_HEIGHT + "px";
-    element.addEventListener('change', onchange);
-    if(block) block.appendChild(element);
-    else GUIContainer.appendChild(element);
+    element.onchange = onchange;
+    line.right.appendChild(element);
     return element;
 }
