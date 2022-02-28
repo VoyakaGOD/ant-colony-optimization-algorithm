@@ -8,6 +8,16 @@
     user-select: none;
 }
 
+body
+{
+    margin: 0px;
+}
+
+#scene
+{
+    display: block;
+}
+
 #GUIContainer
 {
     z-index: 10;
@@ -45,13 +55,14 @@
 
 .GUIButton
 {
-    opacity: 0.5;
-    color: rgb(33, 44, 44);
+    opacity: 0.75;
+    color: black;
+    text-shadow: 1px 1px 2px pink;
 }
 
 .GUIButton:hover
 {
-    opacity: 0.75;
+    font-size: 30px;
 }
 
 .GUIButton:active

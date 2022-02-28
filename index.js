@@ -1,12 +1,15 @@
-const SCENE_WIDTH = 1500;
-const SCENE_HEIGHT = 900;
+const SCENE_WIDTH = window.innerWidth;
+const SCENE_HEIGHT = window.innerHeight;
 const POINT_SIZE = 30;
 const POINT_BORDER = 10;
 const POINT_COLOR = "black";
-const POINT_BORDER_COLOR = "red";
+const POINT_BORDER_COLOR = "#F10000";
 const BACKGROUND_COLOR = "#F0F0F0";
 const LINE_COLOR = "black";
-const THE_SHORTEST_PATH_COLOR = "#00DD00";
+const THE_SHORTEST_PATH_COLOR = "#00BB00";
+const MAX_LINE_WIDTH = 20;
+
+const FULL_POINT_SIZE = POINT_SIZE+POINT_BORDER;
 
 const scene = document.getElementById("scene");
 scene.width = SCENE_WIDTH;
@@ -19,15 +22,22 @@ function Clear()
     ctx.fillRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
 }
 
-function DrawPoint(x, y)
+Clear();
+
+function DrawPointByXY(x, y)
 {
     ctx.fillStyle = POINT_BORDER_COLOR;
-    ctx.fillRect(x - (POINT_SIZE+POINT_BORDER)*0.5, y-(POINT_SIZE+POINT_BORDER)*0.5, (POINT_SIZE+POINT_BORDER), (POINT_SIZE+POINT_BORDER));
+    ctx.fillRect(x - FULL_POINT_SIZE*0.5, y - FULL_POINT_SIZE*0.5, FULL_POINT_SIZE, FULL_POINT_SIZE);
     ctx.fillStyle = POINT_COLOR;
-    ctx.fillRect(x - POINT_SIZE*0.5, y-POINT_SIZE*0.5, POINT_SIZE, POINT_SIZE);
+    ctx.fillRect(x - POINT_SIZE*0.5, y - POINT_SIZE*0.5, POINT_SIZE, POINT_SIZE);
 }
 
-function DrawLine(x1, y1, x2, y2, w, color)
+function DrawPoint(point)
+{
+    DrawPointByXY(point.x, point.y);
+}
+
+function DrawLineByXY(x1, y1, x2, y2, w, color)
 {
     ctx.lineWidth = w;
     ctx.strokeStyle = color;
@@ -37,10 +47,18 @@ function DrawLine(x1, y1, x2, y2, w, color)
     ctx.stroke();
 }
 
+function DrawLine(p1, p2, w, color)
+{
+    if(w > MAX_LINE_WIDTH) w = MAX_LINE_WIDTH;
+    DrawLineByXY(p1.x, p1.y, p2.x, p2.y, w, color);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 const EDIT_MODE = 0;
 const CALCULATION_MODE = 1;
+
+const points = [];
 
 var mode = EDIT_MODE;
 var algorithmLoop = null;
@@ -51,25 +69,24 @@ function IterateAlgorithm()
     iterationCount++;
     iterationText.innerHTML = "iteration: " + iterationCount;
     Iterate();
-    theShortestPathText.innerHTML = "the shortest path: " + theShortestPath.len;
+    theShortestPathText.innerHTML = "the shortest path: " + theShortestPath.len.toFixed(0);
     Clear();
-    for(let i = 1; i < els.length; i++)
-        DrawLine(els[theShortestPath.points[i]].x, els[theShortestPath.points[i]].y, els[theShortestPath.points[i-1]].x, els[theShortestPath.points[i-1]].y, 18, THE_SHORTEST_PATH_COLOR);
-    DrawLine(els[theShortestPath.points[0]].x, els[theShortestPath.points[0]].y, els[theShortestPath.points[els.length-1]].x, els[theShortestPath.points[els.length-1]].y, 18, THE_SHORTEST_PATH_COLOR);
-    for(let i = 0; i < els.length; i++)
+    for(let i = 1; i < theShortestPath.points.length; i++)
+        DrawLine(points[theShortestPath.points[i]], points[theShortestPath.points[i-1]], 20, THE_SHORTEST_PATH_COLOR);
+    for(let i = 0; i < points.length; i++)
         for(let j = 0; j < i; j++)
-            DrawLine(els[i].x, els[i].y, els[j].x, els[j].y, pheromones[i][j]*3, LINE_COLOR);
-    for(let i = 0; i < els.length; i++)
-        DrawPoint(els[i].x, els[i].y);
+            DrawLine(points[i], points[j], pheromones[i][j]*3, LINE_COLOR);
+    for(let i = 0; i < points.length; i++)
+        DrawPoint(points[i]);
     algorithmLoop = setTimeout(IterateAlgorithm, 250);
 }
 
 function ChangeMode()
 {
-    if(mode == EDIT_MODE && els.length >= 3)
+    if(mode == EDIT_MODE && points.length >= 3)
     {
         mode = CALCULATION_MODE;
-        ResetAlgorithmData(els);
+        ResetAlgorithmData(points);
         iterationCount = 0;
         IterateAlgorithm();
     }
@@ -97,31 +114,28 @@ const antsCountSlider = AddSlider("ants count", 10, 20, antsCount, 1, e => antsC
 
 //////////////////////////////////////////////////////////////////////
 
-const els = [];
-
-Clear();
-
 scene.onclick = (e) => {
     if(mode != EDIT_MODE)
         return;
     
     let x = e.offsetX;
     let y = e.offsetY;
-    let f = true;
-    for(let i = 0; i < els.length; i++)
+    let isFree = true;
+    for(let i = 0; i < points.length; i++)
     {
-        if(x > (els[i].x-(POINT_SIZE+POINT_BORDER)*0.5) && x < (els[i].x+(POINT_SIZE+POINT_BORDER)*0.5) && y > (els[i].y-(POINT_SIZE+POINT_BORDER)*0.5) && y < (els[i].y+(POINT_SIZE+POINT_BORDER)*0.5))
+        if(x > (points[i].x-FULL_POINT_SIZE*0.5) && x < (points[i].x+FULL_POINT_SIZE*0.5) && y > (points[i].y-FULL_POINT_SIZE*0.5) && y < (points[i].y+FULL_POINT_SIZE*0.5))
         {
-            els.splice(i, 1);
-            f = false;
+            points.splice(i, 1);
+            isFree = false;
+            break;
         }
     }
-    if(f) els.push({x, y});
+    if(isFree) points.push({x, y});
     Clear();
-    for(let i = 0; i < els.length; i++)
+    for(let i = 0; i < points.length; i++)
         for(let j = 0; j < i; j++)
-            DrawLine(els[i].x, els[i].y, els[j].x, els[j].y, 2, LINE_COLOR);
-    for(let i = 0; i < els.length; i++)
-        DrawPoint(els[i].x, els[i].y);
-    pointsCountText.innerHTML = "points count: " + els.length;
+            DrawLine(points[i], points[j], 2, LINE_COLOR);
+    for(let i = 0; i < points.length; i++)
+        DrawPoint(points[i]);
+    pointsCountText.innerHTML = "points count: " + points.length;
 };
